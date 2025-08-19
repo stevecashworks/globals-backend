@@ -9,6 +9,11 @@ const {transporter,setMailOptions}= require("../../../emailconfig.js")
 const { verify } = require("./verify.js");
 const getEmailTemplate = require("../../../createEmailtemplate.js");
 
+
+
+
+
+
   const plans={
     starter:{
     bonus:10 ,duration: 24,
@@ -19,12 +24,12 @@ const getEmailTemplate = require("../../../createEmailtemplate.js");
     duration: 48,
   },
   ultimate:{
-    bonus: 40,
-    duration: 168,
+    bonus: 35,
+    duration: 72,
   },
   standard:{
-    bonus: 25,
-    duration: 48 ,
+    bonus: 40,
+    duration: 168 ,
   },
   // {
   //   title: "Annual Plan",
