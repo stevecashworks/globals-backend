@@ -9,9 +9,9 @@ const transporter = nodemailer.createTransport({
 });
 
 const setMailOptions = (to, html)=>{
-    return {from: '"HealthSupport" <your-email@example.com>',
+    return {from: '"Globaldiamondcapitals" <your-email@example.com>',
     to,
-    subject: 'Info from HealthSupport!',
+    subject: 'Info from Globaldiamondcapitals!',
     html}
 };
 

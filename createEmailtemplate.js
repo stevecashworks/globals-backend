@@ -92,7 +92,7 @@ const getEmailTemplate = (name, message,hasBtn,buttonText,buttonLink) => {
 // Example usage:
 const emailHTML = getEmailTemplate(
     "Stephen",
-    "We’re thrilled to have you on board! Global diamond capital, we’re committed to providing you with the best medical and health support services."
+    "We’re thrilled to have you on board! Global diamond capital, we’re committed to providing you with the best  financial support services."
 );
 
 // console.log(emailHTML);
