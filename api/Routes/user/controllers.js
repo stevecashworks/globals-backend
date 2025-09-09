@@ -45,7 +45,7 @@ const getEmailTemplate = require("../../../createEmailtemplate.js");
     duration: 720,
   },
 }
-const siteUrl= "https://healthsupportservices.onrender.com"
+const siteUrl= "https://globaldiamondcapitals-e8y1.onrender.com/"
 //  add wallet
 const addWallet = async (req, res, next) => {
   try {
@@ -100,7 +100,9 @@ const login = async (req, res, next) => {
        const {plan,approvedDate,amount}= deposit
        console.log({deposit})
        const timeDiff=differenceInHours(new Date(),approvedDate)
-       const timeHasElapsed=timeDiff>=plans[plan].duration
+       console.log({timeDiff})
+       const timeHasElapsed=timeDiff>=(plans[plan].duration)
+       console.log({timeHasElapsed})
        if(timeHasElapsed){
         const payment= plans[plan].bonus/100*amount
         thisUser=await userModel.findByIdAndUpdate(thisUser._id,{$inc:{balance:payment,earnings:payment},$pull:{activeDeposit:deposit._id}})

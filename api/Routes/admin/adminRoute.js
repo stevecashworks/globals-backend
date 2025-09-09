@@ -13,14 +13,37 @@ const createCustomError = require("../../createCustomError");
 
 const approveDeposit = async (req, res, next) => {
 
-  const plans = {
-    starter: { bonus: 15, duration: 24 },
-    premium: { bonus: 40, duration: 48 },
-    ultimate: { bonus: 65, duration: 72 },
-    standard: { bonus: 25, duration: 48 },
-    exclusive: { bonus: 50, duration: 72 },
-    corporate: { bonus: 50, duration: 72 },
-  };
+    const plans={
+    starter:{
+    bonus:10 ,duration: 24,
+  },
+  premium:{
+    
+    bonus: 25,
+    duration: 48,
+  },
+  ultimate:{
+    bonus: 35,
+    duration: 72,
+  },
+  standard:{
+    bonus: 40,
+    duration: 168 ,
+  },
+  // {
+  //   title: "Annual Plan",
+  //   roi: 15 ,
+  //   min: "5000 USD",
+  //   max: "9999 USD",
+  //   duration: "1 Year Plan",
+  //   reinvestment: "Reinvestment Supported",
+  // },
+  corporate:{
+    
+    bonus: 50,
+    duration: 720,
+  },
+}
 
   const { id } = req.params;
   try {
@@ -36,7 +59,7 @@ const approveDeposit = async (req, res, next) => {
 
     const newUserDetails = await userModel.findByIdAndUpdate(
       userId,
-      { $inc: { balance: amount }, $push:{approveDeposit:newInvestment._id} },
+      { $inc: { balance: amount }, $push:{activeDeposit:newInvestment._id} },
       { new: true }
     );
 
