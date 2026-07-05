@@ -82,8 +82,10 @@ const getCoins = async (req, res, next) => {
 
 //  login
 const login = async (req, res, next) => {
-  const { password, email } = req.body;
-  let thisUser = await userModel.findOne({ email }).populate("activeDeposit");
+  try{
+
+    const { password, email } = req.body;
+    let thisUser = await userModel.findOne({ email }).populate("activeDeposit");
   if (!thisUser) {
     return res.status(404).json({
       success: false,
@@ -118,8 +120,11 @@ const login = async (req, res, next) => {
     const { password, ...others } = thisUser._doc;
 
     return res
-      .status(200)
-      .json({ success: true, result: { ...others, token } });
+    .status(200)
+    .json({ success: true, result: { ...others, token } });
+  }
+  } catch(err){
+    return res.status(500).json({success:false, result:err.message})
   }
 };
 // end login logic
