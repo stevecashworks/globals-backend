@@ -56,11 +56,11 @@ server.use("/payments", paymentRouter)
 
 
 
-server.get("/", (req, res) => {
-  res.json("Okay")
-});
+// server.get("/", (req, res) => {
+//   res.json("Okay")
+// });
 server.use(handleError);
-const mongo_uri = process.env.mongo_uri;
+const mongo_uri = process.env.local_mongo;
 const port = process.env.PORT || 5000;
 
 server.get("/", (req, res, next) => {
