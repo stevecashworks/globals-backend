@@ -9,7 +9,6 @@ const UserModel = new Mongoose.Schema({
   name: {
     type: String,
     required: true,
-    unique: true,
   },
   isAdmin: {
     type: Boolean,
@@ -38,17 +37,29 @@ const UserModel = new Mongoose.Schema({
     type: String,
   },
   earnings: {
-    type: Number,
-    default: 0,
+    type:[{type:Schema.Types.ObjectId,ref:"earnings"}],
+    default :[],
   },
   balance: {
     type: Number,
     default: 0,
   },
-  referralBonus: {
-    type: Number,
-    default: 0,
+  referrals: {
+   type: [],
+   default: [],
   },
+  referralLink:{
+    type:String,
+    required:true,
+    unique:true
+
+  },
+  // for  aesthetics
+  cryptId:{
+    type:String,
+    required:true
+  },
+
   activeDeposit: [{
     type: Schema.Types.ObjectId,
     ref:"investments",
@@ -62,7 +73,14 @@ const UserModel = new Mongoose.Schema({
     type:String,
     required:true
   },
-  
+  deposits:{
+    type:[{
+      type:Mongoose.Schema.Types.ObjectId,
+      ref:"investments"
+    }],
+    default:[]
+  }
+  ,
 
   walletIds: {
     ethereum:{type:String, default:"none" },

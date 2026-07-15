@@ -8,13 +8,10 @@ const {differenceInHours}= require("date-fns")
 const {transporter,setMailOptions}= require("../../../emailconfig.js")
 const { verify } = require("./verify.js");
 const getEmailTemplate = require("../../../createEmailtemplate.js");
-
-
-
-
-
-
-  const plans={
+const generateCryptId = require("./generateCryptId.js");
+const generateReferralCode=require("./generateReferralCode.js")
+console.log(generateReferralCode())
+const plans={
     starter:{
     bonus:10 ,duration: 24,
   },
@@ -47,10 +44,11 @@ const getEmailTemplate = require("../../../createEmailtemplate.js");
 }
 const siteUrl= "https://globaldiamondcapitals-e8y1.onrender.com/"
 //  add wallet
+console.log(generateCryptId())
 const addWallet = async (req, res, next) => {
   try {
     const userId = req.user.id;
-
+    
     const { coin, id } = req.body;
     //   get current walletIds
     const currentUser = await userModel.findById(userId);
@@ -92,6 +90,7 @@ const login = async (req, res, next) => {
       result: `User with email: "${email}" was not found`,
     });
   } else if (password != thisUser.password) {
+    console.log(thisUser)
     return res
       .status(403)
       .json({ success: false, result: "Incorrect password" });
