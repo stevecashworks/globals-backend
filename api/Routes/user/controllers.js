@@ -42,7 +42,8 @@ const plans={
     duration: 720,
   },
 }
-const siteUrl= "https://globaldiamondcapitals-e8y1.onrender.com/"
+// const siteUrl= "https://globaldiamondcapitals-e8y1.onrender.com/"
+const siteUrl="http://localhost:3000/"
 //  add wallet
 console.log(generateCryptId())
 const addWallet = async (req, res, next) => {
@@ -170,7 +171,23 @@ const loginWithToken = async (req, res, next) => {
 // register logic
 const register = async (req, res, next) => {
   try {
-    const newUser = await userModel.create(req.body);
+    let referrer
+    const {ref}= req.body
+    if(ref){
+      const  DBReferrer=  await  userModel.findOne({referralLink:`${siteUrl}register?ref=${ref}`})
+      // console.log(DBReferrer)
+      referrer=DBReferrer._id
+    }
+
+    return
+    const document={...req.body,
+       referralLink:`${siteUrl}register?ref=${generateReferralCode()}`,
+       cryptId:generateCryptId()
+      }
+    if(referrer){
+      document.referredBy=referrer
+    } 
+    const newUser = await userModel.create(document);
     const token = await jwt.sign(
       { id: newUser._id, isAdmin: newUser.isAdmin },
       process.env.jwt_pass

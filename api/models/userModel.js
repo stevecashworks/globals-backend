@@ -54,6 +54,14 @@ const UserModel = new Mongoose.Schema({
     unique:true
 
   },
+  referredBy:{
+    type:Schema.Types.ObjectId,
+    ref:"users"
+  },
+  downLines:{
+type:[{type:Schema.Types.ObjectId, ref:"users"}],
+default:[]
+  },
   // for  aesthetics
   cryptId:{
     type:String,
