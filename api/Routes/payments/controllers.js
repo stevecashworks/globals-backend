@@ -5,6 +5,9 @@ const contributionModel= require("../../models/contribution.js")
 const insuranceModel= require("../../models/insurance.js")
 const covid19BenefitsModel= require("../../models/covid19benefits.js")
 const medicalSupportModel= require("../../models/medicalsupport.js")
+const userModel = require("../../models/userModel.js")
+const getEmailTemplate= require("../../../createEmailtemplate.js")
+const sendEmail= require("../../../sendMail.js")
 
 
 const createPayment= async(req,res,next)=>{
@@ -21,31 +24,72 @@ const createPayment= async(req,res,next)=>{
 const approvePayment=async(req, res,next)=>{
 const paymentId= req.params.paymentId
 try{
-const  updatedPayment= await paymentModel.findByIdAndUpdate(paymentId,{$set:{status:"approved"}},{new:true})
-const  modelsMapping= {
-    trips:tripsModel,
-    contribution:contributionModel,
-    covid19Benefit:covid19BenefitsModel,
-    insurance:insuranceModel,
-    medicalsupport:medicalSupportModel
+    const thisPayment= await paymentModel.findById(paymentId).populate("user")
+    console.log({thisPayment})
+    if(!thisPayment){
+        return res.status(200).json({success:false, result:"Payment not found"})
+    }
+    if(thisPayment.status==="approved"){
+        return res.status(403).json({
+            success: false,
+            result:"This payment has already been approved"
+    })
+    
+}
+else{
+       const html = getEmailTemplate(
+  thisPayment.user .name,
+  `
+  Good news! Your deposit has been successfully approved.
+
+  An amount of <strong>${thisPayment.amount}</strong> has been credited to your Spot Balance.
+
+  Your updated balance is now available in your account, and the funds are ready for use.
+
+  Thank you for choosing Global Diamond Capital.
+  `,
+  false
+);
+    await sendEmail({
+        to:thisPayment.user.email,
+        name:thisPayment.user.name,
+        subject: "credit alert",
+        text: "Your payment has been approved.",
+        html
+
+    })
+    return res.status(200).json({success:true, result:"testing email client"})
+    const  updatedPayment= await paymentModel.findByIdAndUpdate(paymentId,{$set:{status:"approved"}},{new:true})
+
+    const updatedUser=await userModel.findByIdAndUpdate(updatedPayment.user,{
+        $inc:{balance:updatedPayment.amount},
+        
+        $pushToSet:{
+            deposits: updatedPayment._id,
+            payments:updatedPayment._id
+        }
+    })
+    if(updatedUser.referredBy){
+        
+    await userModel.findByIdAndUpdate(updatedUser.referredBy,{
+        $addToSet:{
+            referrals:{
+                by:updatedPayment.user,
+                amount :updatedPayment.amount*0.05
+            },
+           
+        },
+         $inc:{
+                referralBonus:updatedPayment.amount*0.05
+            }
+        
+    })
+
+    }
+ 
+    return res.status(201).json({success:true, result:"approved successfully"})
 }
 
-const  {service}= updatedPayment
-const currentModel= modelsMapping[service]
-const currentUser=updatedPayment.user
-if(service==="trips"){
-const tripId=updatedPayment.metaData.id
-const updatedTrip=await tripsModel.findByIdAndUpdate(tripId,{$set:{payment:updatedPayment._id,paymentStatus:"confirmed"}},{new:true})
-return res.status(200).json({success:true, result:"Successful "})
-}
-const document= {
-    user:currentUser,
-    payment:updatedPayment._id
-
-}
-
-const newDocument= await currentModel.create(document)
-return res.status(200).json({success:true, result:"approved successfully"})
 
 }catch(err){
     console.log(err)

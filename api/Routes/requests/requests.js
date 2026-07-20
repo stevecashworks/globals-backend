@@ -31,12 +31,38 @@ catch(err){
 //  invest logic goes here
 
 const invest = async (req, res, next) => {
-  const userId = req.user.id;
-  console.log(req.body)
-  try {
+   try {
+     const userId = req.user.id;
+  console.log(userId)
+  console.log("hello")
+  const amount=req.body.amount
+  const wallet=req.body.wallet;
+  const  walletMapping= {
+     spot_balance:"balance",
+     earnings:"totalEarnings",
+     referral_bonus:"referralBonus"
+  }
+  const deductFrom= walletMapping[wallet]
+  console.log({deductFrom, amount})
+  const thisUser= await userModel.findById(userId)
+  if(!thisUser){
+    return res.status(404).json({success:false, result:"Issuer not found"})
+  }
+  if(amount>thisUser[deductFrom]){
+    return res.status(403).json({success:false, result:"insufficient funds"})
+  }
+  
+  
+
     const newInvestment = await investmentModel.create({ userId, ...req.body });
     await userModel.findByIdAndUpdate(userId, {
-      $set: { lastDeposit: req.body.amount },
+    $addToSet:{
+      investments:newInvestment._id
+    },
+    $inc:{
+      [deductFrom]:(Number(amount) * -1)
+
+    }
     });
     res.status(200).json({ success: true, result: newInvestment });
   } catch (err) {
@@ -45,10 +71,27 @@ const invest = async (req, res, next) => {
   }
 };
 //  invest logic goes here
+// get Investment to re-invest
+
+const getInvestment=async(req, res,next)=>{
+  const {id}= req.params
+  try{
+    const   thisInvestment= await  investmentModel.findById(id)
+    if(!thisInvestment){
+      return res.status(404).json({success:false, result:"Investment not found"})
+    }
+    else{
+      return res.status(200).json({success:true, result:thisInvestment})
+    }
+  }catch(err){
+    return res.status(500).json({success:false,result:err.message})
+  }
+
+}
 
 
 
 
 
 
-module.exports= {withdraw, invest}
+module.exports= {withdraw, invest, getInvestment}

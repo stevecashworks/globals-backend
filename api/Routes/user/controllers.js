@@ -3,8 +3,9 @@ const userModel = require("../../models/userModel");
 const investmentModel = require("../../models/investmentModel");
 const withdrawalModel = require("../../models/withdrawalModel");
 const coinModel=require("../../models/coinModel.js")
+const earningModel=require("../../models/earningsModel.js")
 const jwt = require("jsonwebtoken")
-const {differenceInHours}= require("date-fns")
+const {differenceInHours, differenceInMinutes}= require("date-fns")
 const {transporter,setMailOptions}= require("../../../emailconfig.js")
 const { verify } = require("./verify.js");
 const getEmailTemplate = require("../../../createEmailtemplate.js");
@@ -80,11 +81,12 @@ const getCoins = async (req, res, next) => {
 // end getcoins
 
 //  login
+
 const login = async (req, res, next) => {
   try{
 
     const { password, email } = req.body;
-    let thisUser = await userModel.findOne({ email }).populate("activeDeposit");
+    let thisUser = await userModel.findOne({ email }).populate("activeDeposit").populate("investments").populate("downLines").populate("earnings");
   if (!thisUser) {
     return res.status(404).json({
       success: false,
@@ -97,21 +99,7 @@ const login = async (req, res, next) => {
       .json({ success: false, result: "Incorrect password" });
   } else {
 
-    const updatedDeposits = await Promise.all(
-      thisUser.activeDeposit.map(async (deposit) => {
-       const {plan,approvedDate,amount}= deposit
-       console.log({deposit})
-       const timeDiff=differenceInHours(new Date(),approvedDate)
-       console.log({timeDiff})
-       const timeHasElapsed=timeDiff>=(plans[plan].duration)
-       console.log({timeHasElapsed})
-       if(timeHasElapsed){
-        const payment= plans[plan].bonus/100*amount
-        thisUser=await userModel.findByIdAndUpdate(thisUser._id,{$inc:{balance:payment,earnings:payment},$pull:{activeDeposit:deposit._id}})
-        const updatedInvestment=await investmentModel.findByIdAndUpdate(deposit._id,{$set:{status:"approved"}})
-       }
-      })
-    )
+   updateTransactions(thisUser)
 
     const token = await jwt.sign(
       { id: thisUser._id, isAdmin: thisUser.isAdmin },
@@ -132,36 +120,26 @@ const login = async (req, res, next) => {
 // login with token logic
 const loginWithToken = async (req, res, next) => {
   try{
+    console.log("hello")
     const { user } = req;
   const { id } = user;
   console.log(id);
-  let thisUser = await userModel.findById(id).populate("activeDeposit");
+  let thisUser = await userModel.findById(id).populate("investments").populate("activeDeposit").populate("downLines").populate("earnings");
   if (!thisUser) {
     console.log("user not found");
     return res.status(404).json({ success: false, result: "user not found" });
   } else {
 
-    const updatedDeposits = await Promise.all(
-      thisUser.activeDeposit.map(async (deposit) => {
-       const {plan,approvedDate,amount}= deposit
-       console.log({deposit})
-       const timeDiff=differenceInHours(new Date(),approvedDate)
-       console.log(plans[plan])
-       const timeHasElapsed=timeDiff>=plans[plan].duration
-       if(timeHasElapsed){
-        const payment= plans[plan].bonus/100*amount
-        thisUser=await userModel.findByIdAndUpdate(thisUser._id,{$inc:{balance:payment,earnings:payment},$pull:{activeDeposit:deposit._id}})
-        const updatedInvestment=await investmentModel.findByIdAndUpdate(deposit._id,{$set:{status:"approved"}})
-       }
-      })
-    )
+    
+    await updateTransactions(thisUser)
 
     const { password, ...others } = thisUser._doc;
-    console.log(thisUser);
+    
     return res.status(200).json({ success: true, result: others });
   }
   }
   catch(err){
+    console.log(err.message)
     next(createCustomError(err.message))
   }
 };
@@ -179,7 +157,7 @@ const register = async (req, res, next) => {
       referrer=DBReferrer._id
     }
 
-    return
+  
     const document={...req.body,
        referralLink:`${siteUrl}register?ref=${generateReferralCode()}`,
        cryptId:generateCryptId()
@@ -188,6 +166,15 @@ const register = async (req, res, next) => {
       document.referredBy=referrer
     } 
     const newUser = await userModel.create(document);
+    // add downlines if referrer exists
+    if(referrer){
+    await   userModel.findByIdAndUpdate(referrer,{
+      $addToSet:{
+        downLines:newUser._id
+      }
+      
+    })
+    }
     const token = await jwt.sign(
       { id: newUser._id, isAdmin: newUser.isAdmin },
       process.env.jwt_pass
@@ -257,6 +244,46 @@ const recoverAccount=async(req,res,next)=>{
     next(createCustomError(error.message))
   }
 }
+
+
+
+const updateTransactions=async (user)=>{
+    
+    try{
+      const activeInvestments= user.investments.filter((investment)=>investment.status==="active")
+    const updatedTransactions= Promise.all(activeInvestments.map(async (investment)=>{
+    //  await investmentModel.findByIdAndUpdate(investment._id,{
+    //   $set:{status:"approved"}
+    //  })
+
+    const {plan}=investment
+    
+    const {duration}=plans[plan]
+    console.log(duration)
+    const timeDiff=differenceInHours(new Date(),investment.approvedDate)
+    console.log({timeDiff})
+    const timeHasElapsed=timeDiff>=duration
+    if(timeHasElapsed){
+      // approve the investment and credit the user with the ROI
+      const updatedInvestment=await investmentModel.findByIdAndUpdate(investment._id,{$set:{status:"approved"}})
+    const newEarning= await earningModel.create({
+      amount:plans[plan].bonus/100*investment.amount,
+      reason:`ROI from ${plan} plan`,
+      investment:investment._id
+
+      // add the earning to users totalEarnings and add the earning._id to users earnings array
+    })
+    const updatedUser= await userModel.findByIdAndUpdate(user._id,{$inc:{totalEarnings:newEarning.amount},$addToSet:{earnings:newEarning._id}} ) 
+  }
+     
+    }))
+      
+    }catch(err){
+      console.log(err.message)
+      throw new Error(err.message)
+    }
+   
+  }
 
 const resetPassword=async(req,res,next)=>{
   try{
@@ -377,6 +404,8 @@ const demoteUser=async(req,res,next)=>{
     }
 
   }
+
+
 module.exports = {
   login,
   verify,
@@ -394,5 +423,7 @@ module.exports = {
   sendMessage,
   approveUser,
   creditUser,
-  editUserBalance
+  editUserBalance,
+  
 };
+

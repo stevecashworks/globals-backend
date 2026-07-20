@@ -1,99 +1,145 @@
-const getEmailTemplate = (name, message,hasBtn,buttonText,buttonLink) => {
-    return `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Email Template</title>
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                margin: 0;
-                padding: 0;
-                background-color: #f9f9f9;
-                color: #333;
-            }
-            .email-container {
-                max-width: 600px;
-                margin: 20px auto;
-                background-color: #fff;
-                border: 1px solid #ddd;
-                border-radius: 8px;
-                overflow: hidden;
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            }
-            .email-header {
-                background-color: #1abc9c;
-                color: #fff;
-                text-align: center;
-                padding: 20px 10px;
-            }
-            .email-header h1 {
-                margin: 0;
-                font-size: 24px;
-            }
-            .email-body {
-                padding: 20px;
-            }
-            .email-body p {
-                margin: 0 0 10px;
-                line-height: 1.6;
-            }
-            .email-footer {
-                text-align: center;
-                padding: 15px;
-                background-color: #f9f9f9;
-                font-size: 14px;
-                color: #777;
-            }
-            .email-footer a {
-                color: #1abc9c;
-                text-decoration: none;
-            }
-            .btn {
-                display: inline-block;
-                background-color: #1abc9c;
-                color: #fff;
-                text-decoration: none;
-                padding: 10px 20px;
-                border-radius: 4px;
-                font-size: 16px;
-                margin-top: 10px;
-                color:white
-            }
-            .btn:hover {
-                background-color: #16a085;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="email-container">
-            <div class="email-header">
-                <h1>Welcome to Global diamond capital</h1>
+const getEmailTemplate = (
+  name,
+  message,
+  hasBtn = false,
+  buttonText = "",
+  buttonLink = ""
+) => {
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Global Diamond Capital</title>
+
+<style>
+    body{
+        margin:0;
+        padding:0;
+        background:#f5f5f5;
+        font-family:Arial, Helvetica, sans-serif;
+        color:#333;
+    }
+
+    .container{
+        max-width:600px;
+        margin:30px auto;
+        background:#fff;
+        border-radius:10px;
+        overflow:hidden;
+        border:1px solid #e5e5e5;
+    }
+
+    .header{
+        background:#1abc9c;
+        padding:30px;
+        text-align:center;
+    }
+
+    .header h1{
+        margin:0;
+        color:#fff;
+        font-size:28px;
+    }
+
+    .body{
+        padding:35px 30px;
+        line-height:1.8;
+        font-size:16px;
+    }
+
+    .button-wrapper{
+        text-align:center;
+        margin:35px 0;
+    }
+
+    .btn{
+        display:inline-block;
+        padding:14px 28px;
+        background:#1abc9c;
+        color:#ffffff !important;
+        text-decoration:none;
+        border-radius:6px;
+        font-weight:bold;
+        font-size:16px;
+    }
+
+    .btn:hover{
+        background:#16a085;
+    }
+
+    .footer{
+        background:#fafafa;
+        padding:25px;
+        text-align:center;
+        font-size:14px;
+        color:#777;
+    }
+
+    .footer a{
+        color:#1abc9c;
+        text-decoration:none;
+    }
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+        <h1>Global Diamond Capital</h1>
+    </div>
+
+    <div class="body">
+
+        <p>Hello <strong>${name}</strong>,</p>
+
+        <p>${message}</p>
+
+        ${
+          hasBtn
+            ? `
+            <div class="button-wrapper">
+                <a href="${buttonLink}" class="btn">
+                    ${buttonText}
+                </a>
             </div>
-            <div class="email-body">
-                <p>Dear ${name},</p>
-                <p>${message}</p>
-                ${hasBtn&&`<a href=${buttonLink} class="btn">${buttonText}</a>`}
-                
-                <p>If you have any questions or need assistance, feel free to reply to this email or contact our support team at any time.</p>
-            </div>
-            <div class="email-footer">
-                <p>Thank you for choosing Diamond global capital</p>
-                <p><a href="globaldiamondcapital.onrender.com">Visit our website</a> | <a href="mailto:globaldiamondcapital.com">Contact Support</a></p>
-            </div>
-        </div>
-    </body>
-    </html>
-    `;
+        `
+            : ""
+        }
+
+        <p>
+            If you have any questions or need assistance,
+            simply reply to this email and our support team
+            will be happy to help.
+        </p>
+
+    </div>
+
+    <div class="footer">
+
+        <p>Thank you for choosing Global Diamond Capital.</p>
+
+        <p>
+            <a href="https://globaldiamondcapital.com">
+                Visit our website
+            </a>
+            &nbsp;|&nbsp;
+            <a href="mailto:support@globaldiamondcapital.com">
+                Contact Support
+            </a>
+        </p>
+
+    </div>
+
+</div>
+
+</body>
+</html>
+`;
 };
 
-// Example usage:
-const emailHTML = getEmailTemplate(
-    "Stephen",
-    "We’re thrilled to have you on board! Global diamond capital, we’re committed to providing you with the best  financial support services."
-);
-
-// console.log(emailHTML);
-module.exports=getEmailTemplate
+module.exports = getEmailTemplate;

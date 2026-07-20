@@ -16,7 +16,7 @@ required:true,
 },
 service:{
 type:String,
-required:true,
+
 
 },
 paymentMethod:{

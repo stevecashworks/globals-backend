@@ -45,7 +45,13 @@ const UserModel = new Mongoose.Schema({
     default: 0,
   },
   referrals: {
-   type: [],
+   type: [{
+    by:{
+      type:Schema.Types.ObjectId,
+      ref:"users"
+    },
+    amount:Number
+   }],
    default: [],
   },
   referralLink:{
@@ -73,6 +79,11 @@ default:[]
     ref:"investments",
     default:[]
 }],
+investments:[{
+    type: Schema.Types.ObjectId,
+    ref:"investments",
+    default:[]
+}],
   lastDeposit: {
     type: Number,
     
@@ -84,7 +95,7 @@ default:[]
   deposits:{
     type:[{
       type:Mongoose.Schema.Types.ObjectId,
-      ref:"investments"
+      ref:"payments"
     }],
     default:[]
   }
@@ -95,7 +106,16 @@ default:[]
     usdt:{type:String, default:"none" },
     dogecoin:{type:String, default:"none" },
     bitcoin:{type:String, default:"none" },
+  },
+  totalEarnings:{
+    type:Number, 
+    default:0
+  },
+  referralBonus:{
+    type:Number, 
+    required:true,
+    default:0,
   }
   ,
-});
+},{timestamps:true});
 module.exports=Mongoose.model("users",UserModel)

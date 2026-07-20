@@ -12,7 +12,14 @@
     reason:{
         type:String,
         required:true
+    },
+    investment:{
+        type:Schema.Types.ObjectId,
+        required:true,
+        ref:"investments"
     }
+
  })
- module.exports= EarningSchema
+ const earningModel=model("earnings", EarningSchema)
+ module.exports= earningModel
 //  earningSchema should be used to track earnings

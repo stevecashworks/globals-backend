@@ -26,6 +26,7 @@ server.use("/users", userRouter)
 server.use("/admin", adminRouter)
 server.use("/requests", requestRoute)
 server.use("/payments", paymentRouter)
+const transporter = require("../mailer.js");
 
 //  user routing optimized to fit with vercel's free tier serverless function count polic
 // server.post("users/login", login);
@@ -55,16 +56,41 @@ server.use("/payments", paymentRouter)
 // server.post("requests/invest", verify, invest);
 
 
-
 // server.get("/", (req, res) => {
 //   res.json("Okay")
 // });
 server.use(handleError);
-const mongo_uri = process.env.mongo_uri;
+const mongo_uri = process.env.local_mongo;
 const port = process.env.PORT || 5000;
 
 server.get("/", (req, res, next) => {
   res.status(200).send("developed by me");
+})
+server.get("/test-email", async (req, res) => {
+    try {
+        const info = await transporter.sendMail({
+            from: `"Northflank Test" <${process.env.SMTP_USER}>`,
+            to: "chigbustephennamdi@gmail.com",
+            subject: "SMTP Test",
+            text: "If you're reading this, SMTP is working!",
+            html: "<h2>🎉 SMTP is working!</h2>"
+        });
+
+        res.json({
+            success: true,
+            messageId: info.messageId,
+            response: info.response
+        });
+    } catch (err) {
+        console.error(err);
+
+        res.status(500).json({
+            success: false,
+            error: err.message,
+            code: err.code,
+            command: err.command
+        });
+      }
 })
 
   
@@ -86,10 +112,42 @@ server.get("/", (req, res, next) => {
     }
   }
   // removeStaleEntries(withdrawalModel)
+
+  // ||-------------------------------------------------------||
+  // || Here are the database Migrations for the real server  ||
+  // ||-------------------------------------------------------||
+  // 
+
+
+  // referralBonus number, default:0
+  // totalEarnings number, default:0
+  // investments array, default []
+  // downlines array, default []
+  // referral link, partly unique
+  const migrateDatabase=async ()=>{
+ try{
+  const allUsers= await userModel.find()
+  const updatedUsers= Promise.all(allUsers.map(async (x)=>{
+    try{
+
+      const updatedUser=await  userModel.findByIdAndUpdate(x._id, {$set:{investments:[]}},{new:true})
+      console.log(updatedUser)
+    }
+    catch(err){
+      console.log(err.message)
+    }
+
+  }))
+
+ }catch(err){
+  console.log(err.message)
+ } 
+}
 const startServer = async () => {
   try {
     await connect_Db(mongo_uri);
-   
+    
+  //  migrateDatabase()
     // await userModel.updateMany({},{$set:{stautus:"approved"}})
     server.listen(port, () => {
       console.log(`Server is actively listening on port ${port}`);
@@ -98,4 +156,5 @@ const startServer = async () => {
     console.log(error.message);
   }
 };
+
 startServer();

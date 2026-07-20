@@ -13,12 +13,15 @@ required:true
     },
     approvedDate:{
         type:Date,
+        default:Date.now()
         
     },
+    wallet:String,
     coin:{
         type:String,
         enum:["doge", "ethereum", "usdt","bitcoin"],
-        required:true
+        required:true,
+        default:"usdt"
     },
     status:{
         type:String,
