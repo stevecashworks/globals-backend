@@ -129,7 +129,7 @@ const startServer = async () => {
   try {
     await connect_Db(mongo_uri);
     
-   migrateDatabase()
+  //  migrateDatabase()
     // await userModel.updateMany({},{$set:{stautus:"approved"}})
     server.listen(port, () => {
       console.log(`Server is actively listening on port ${port}`);
