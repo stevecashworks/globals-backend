@@ -18,6 +18,8 @@ const userModel = require("./models/userModel.js");
 const investmentModel = require("./models/investmentModel.js");
 const withdrawalModel = require("./models/withdrawalModel.js");
 const coinModel= require("./models/coinModel.js")
+const generateCryptId=require("./Routes/user/generateCryptId.js")
+
 dotenv.config();
 const server = express();
 server.use(cors());
@@ -26,7 +28,12 @@ server.use("/users", userRouter)
 server.use("/admin", adminRouter)
 server.use("/requests", requestRoute)
 server.use("/payments", paymentRouter)
-const transporter = require("../mailer.js");
+server.use("/google", require("./Routes/auth/authRoute.js"))
+const {siteUrl}=require("./Routes/user/controllers.js")
+const generateReferralCode=require("./Routes/user/generateReferralCode.js")
+
+
+
 
 //  user routing optimized to fit with vercel's free tier serverless function count polic
 // server.post("users/login", login);
@@ -55,43 +62,17 @@ const transporter = require("../mailer.js");
 // server.post("requests/withdraw", verify, withdraw);
 // server.post("requests/invest", verify, invest);
 
-
 // server.get("/", (req, res) => {
 //   res.json("Okay")
 // });
 server.use(handleError);
-const mongo_uri = process.env.local_mongo;
+const mongo_uri = process.env.mongo_uri;
 const port = process.env.PORT || 5000;
 
 server.get("/", (req, res, next) => {
   res.status(200).send("developed by me");
 })
-server.get("/test-email", async (req, res) => {
-    try {
-        const info = await transporter.sendMail({
-            from: `"Northflank Test" <${process.env.SMTP_USER}>`,
-            to: "chigbustephennamdi@gmail.com",
-            subject: "SMTP Test",
-            text: "If you're reading this, SMTP is working!",
-            html: "<h2>🎉 SMTP is working!</h2>"
-        });
 
-        res.json({
-            success: true,
-            messageId: info.messageId,
-            response: info.response
-        });
-    } catch (err) {
-        console.error(err);
-
-        res.status(500).json({
-            success: false,
-            error: err.message,
-            code: err.code,
-            command: err.command
-        });
-      }
-})
 
   
   const removeStaleEntries=async(model)=>{
@@ -130,8 +111,9 @@ server.get("/test-email", async (req, res) => {
   const updatedUsers= Promise.all(allUsers.map(async (x)=>{
     try{
 
-      const updatedUser=await  userModel.findByIdAndUpdate(x._id, {$set:{investments:[]}},{new:true})
-      console.log(updatedUser)
+      console.log(x)
+              // const updatedUser=await  userModel.findByIdAndUpdate(x._id, {$set:{referralLink:`${siteUrl}/register?ref=${generateReferralCode()}`}},{new:true})
+      // console.log(updatedUser)
     }
     catch(err){
       console.log(err.message)
@@ -147,7 +129,7 @@ const startServer = async () => {
   try {
     await connect_Db(mongo_uri);
     
-  //  migrateDatabase()
+   migrateDatabase()
     // await userModel.updateMany({},{$set:{stautus:"approved"}})
     server.listen(port, () => {
       console.log(`Server is actively listening on port ${port}`);

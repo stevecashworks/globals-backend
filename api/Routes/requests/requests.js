@@ -8,13 +8,26 @@ const investmentModel = require("../../models/investmentModel");
 
 // withdraw logic starts
 const  withdraw=  async(req,res,next)=>{
-    const {amount,walletId}= req.body
-try{
+  try{
+  const {amount,walletId, deduct_from}= req.body
+  console.log({deduct_from})
+  const walletMapping= {
+    earnings:"totalEarnings",
+    referral_bonus:"referralBonus",
+    spot_balance:"balance"
+   }
+  const walletToDebit= walletMapping[deduct_from]
+const walletBalance= await userModel.findById(req.user.id).select(walletToDebit);
+console.log({walletBalance});
+if(walletBalance[walletToDebit]<amount){
+  return res.status(403).json({success:false, result:"insufficient funds"})
+}
 
     const user= req.user 
 const userId= user.id
 const newTransaction= await withdrawalModel.create({...req.body,userId}) 
-const  newUserDetails=await userModel.findByIdAndUpdate(userId,{$inc:{balance:(-1*amount)},$set:{pendingWithdrawal:amount,lastWithdrawal:amount}})
+
+const  newUserDetails=await userModel.findByIdAndUpdate(userId,{$inc:{[walletToDebit]:(-1*amount)},$set:{pendingWithdrawal:amount,lastWithdrawal:amount}})
  return res.status(200).json({success:true,result:newTransaction})
 }
 catch(err){

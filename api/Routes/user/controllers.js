@@ -11,6 +11,7 @@ const { verify } = require("./verify.js");
 const getEmailTemplate = require("../../../createEmailtemplate.js");
 const generateCryptId = require("./generateCryptId.js");
 const generateReferralCode=require("./generateReferralCode.js")
+const sendMail= require("../../../mailer.js")
 console.log(generateReferralCode())
 const plans={
     starter:{
@@ -43,9 +44,38 @@ const plans={
     duration: 720,
   },
 }
-// const siteUrl= "https://globaldiamondcapitals-e8y1.onrender.com/"
-const siteUrl="http://localhost:3000/"
+const siteUrl= "https://globaldiamondcapitals-e8y1.onrender.com/"
+// const siteUrl="http://localhost:3000/"
 //  add wallet
+const welcomeMessage = `
+Welcome to <strong>Global Diamond Capital</strong>! 🎉
+
+<br><br>
+
+Your account has been created successfully, and you're now part of a growing community of crypto investors committed to building long-term wealth.
+
+<br><br>
+
+With your account, you can:
+
+<ul style="padding-left:20px; line-height:1.8;">
+    <li>💎 Explore our investment plans.</li>
+    <li>💰 Deposit funds securely into your wallet.</li>
+    <li>📈 Monitor your investments and earnings in real time.</li>
+    <li>🤝 Earn additional income through our referral program.</li>
+    <li>🔒 Enjoy a secure and reliable investment experience.</li>
+</ul>
+
+To get started, simply log in to your dashboard, complete your profile if necessary, and fund your wallet to begin investing.
+
+<br><br>
+
+We appreciate your trust in Global Diamond Capital and look forward to being part of your financial journey. If you ever need assistance, our support team is always here to help.
+
+<br><br>
+
+<strong>Welcome aboard, and happy investing!</strong>
+`;
 console.log(generateCryptId())
 const addWallet = async (req, res, next) => {
   try {
@@ -180,7 +210,8 @@ const register = async (req, res, next) => {
       process.env.jwt_pass
     );
     const { password, ...others } = newUser._doc;
-
+    const html=getEmailTemplate(newUser.name,welcomeMessage,true,"verify your email",`${siteUrl}verify?id=${newUser._id}`)
+    await sendMail({to:newUser.email,subject:"Welcome to Global Diamond Capital - Verify Your Email",html})
     return res
       .status(201)
       .json({ success: true, result: { token, ...others } });
@@ -220,25 +251,16 @@ const recoverAccount=async(req,res,next)=>{
   
   try {
     const {email}= req.body
+    console.log({email})
    const thisUser= await  userModel.findOne({email})
    if(!email){
     return res.status(404).json({success:false, result:"No user was found with this email"})
    }
    else{
     const message="Please click the button below to reset your password"
-    const html=getEmailTemplate(thisUser.name,message,true,"reset password",`${siteUrl}/resetpassword/${thisUser._id}`)
-    await transporter.sendMail(
-      setMailOptions(email,html)
-    ,(err,info)=>{
-      if(err){
-        return res.status(500).json({success:false, result:err.message})
-      }
-      else{
-        
-        return res.status(200).json({success:true, result:"done"})
-
-      }
-    })
+    const html=getEmailTemplate(thisUser.name,message,true,"reset password",`${siteUrl}resetpassword/${thisUser._id}`)
+     await sendMail({to:thisUser.email,subject:"Reset your password",html})
+     return res.status(200).json({success:true, result:"A password reset link has been sent to your email"})
    }
   } catch (error) {
     next(createCustomError(error.message))
@@ -329,18 +351,8 @@ const demoteUser=async(req,res,next)=>{
         const  {email,name, message}= req.body
 
         const html=getEmailTemplate(name,message)
-        await transporter.sendMail(
-          setMailOptions(email,html)
-        ,(err,info)=>{
-          if(err){
-            return res.status(500).json({success:false, result:err.message})
-          }
-          else{
-            
-            return res.status(200).json({success:true, result:"done"})
-    
-          }
-        })
+       sendMail({to:email,subject:"Message from Global Diamond Capital",html})
+       return res.status(200).json({success:true, result:"Message sent successfully"})
 
     }
     catch(err){
@@ -393,6 +405,18 @@ const demoteUser=async(req,res,next)=>{
 
   }
 
+  const verifyUserEmail=async(req, res )=>{
+    try{
+     const {id}= req.params
+      const updatedUser= await  userModel.findByIdAndUpdate(id,{$set:{isVerified:true}
+      })
+      return res.status(200).json({success:true,result:updatedUser})
+    }
+    catch(err){
+      console.log(err.message)
+      return res.status(500).json({success:false, result:err.message})
+    }
+  }
   const editUserBalance= async(req,res,next)=>{
     try{
       const {id}= req.params
@@ -424,6 +448,8 @@ module.exports = {
   approveUser,
   creditUser,
   editUserBalance,
+  verifyUserEmail,
+  siteUrl
   
 };
 

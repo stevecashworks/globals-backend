@@ -3,7 +3,7 @@ const {Schema} = Mongoose
 const UserModel = new Mongoose.Schema({
   status:{
     type:String,
-    enum:["pending", "approved"],
+    enum:["pending", "approved","suspended"],
     default:"pending"
   },
   name: {
@@ -72,6 +72,10 @@ default:[]
   cryptId:{
     type:String,
     required:true
+  },
+  isVerified:{
+    type:Boolean,
+    default:false
   },
 
   activeDeposit: [{

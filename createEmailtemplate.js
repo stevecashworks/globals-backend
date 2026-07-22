@@ -32,7 +32,7 @@ const getEmailTemplate = (
     }
 
     .header{
-        background:#1abc9c;
+        background:#2c3e50;
         padding:30px;
         text-align:center;
     }
@@ -95,14 +95,14 @@ const getEmailTemplate = (
 
     <div class="body">
 
-        <p>Hello <strong>${name}</strong>,</p>
+        <p style="text-transform:capitalize">Hello <strong>${name}</strong>,</p>
 
         <p>${message}</p>
 
         ${
           hasBtn
             ? `
-            <div class="button-wrapper">
+            <div class="button-wrapper" style="text-transform:capitalize">
                 <a href="${buttonLink}" class="btn">
                     ${buttonText}
                 </a>
@@ -124,13 +124,11 @@ const getEmailTemplate = (
         <p>Thank you for choosing Global Diamond Capital.</p>
 
         <p>
-            <a href="https://globaldiamondcapital.com">
+            <a href="https://globaldiamondcapitals-e8y1.onrender.com">
                 Visit our website
             </a>
             &nbsp;|&nbsp;
-            <a href="mailto:support@globaldiamondcapital.com">
-                Contact Support
-            </a>
+           
         </p>
 
     </div>

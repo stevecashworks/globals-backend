@@ -176,7 +176,17 @@ const getWithdrawals= async(req,res,next)=>{
         next(createCustomError(error.message))
     }
 }
-
+const suspendAccount= async(req,res,next)=>{
+try{
+ const  {id}= req.params
+ const thisUser= await userModel.findByIdAndUpdate(id,{$set:{status:"suspended"}},{new:true})
+ return res.status(200).json({success:true, result:"account has been suspended"})
+}
+catch(err){
+  return res.status(500).json({success:false, message:err.message})
+}
+}
+  
 
 
 // get withdrawals  ends here
@@ -198,5 +208,6 @@ module.exports = {
   approveWithdrawal,
   declineWithdrawal,
   approveDeposit,
-  declineInvestment
+  declineInvestment,
+  suspendAccount
 };

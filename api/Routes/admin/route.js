@@ -7,6 +7,7 @@ const {
     declineWithdrawal,
     approveDeposit,
     declineInvestment,
+    suspendAccount
   } = require("./adminRoute.js");
   
   const {Router}= require("express")
@@ -17,6 +18,7 @@ const {
   adminRoute.post("/approvedeposit/:id",  verifyAdmin, approveDeposit)
   adminRoute.post("/declinedeposit/:id",  verifyAdmin, declineInvestment)
   adminRoute.post("/declinewithdrawal/:id",  verifyAdmin, declineWithdrawal)
+  adminRoute.post("/suspendaccount/:id",  verifyAdmin, suspendAccount)
 
 
 

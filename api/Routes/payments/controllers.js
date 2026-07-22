@@ -7,7 +7,7 @@ const covid19BenefitsModel= require("../../models/covid19benefits.js")
 const medicalSupportModel= require("../../models/medicalsupport.js")
 const userModel = require("../../models/userModel.js")
 const getEmailTemplate= require("../../../createEmailtemplate.js")
-const sendEmail= require("../../../sendMail.js")
+const sendMail = require("../../../mailer.js")
 
 
 const createPayment= async(req,res,next)=>{
@@ -50,15 +50,9 @@ else{
   `,
   false
 );
-    await sendEmail({
-        to:thisPayment.user.email,
-        name:thisPayment.user.name,
-        subject: "credit alert",
-        text: "Your payment has been approved.",
-        html
-
-    })
-    return res.status(200).json({success:true, result:"testing email client"})
+await sendMail({to:thisPayment.user.email,subject:"Deposit Approved",html});
+    
+     
     const  updatedPayment= await paymentModel.findByIdAndUpdate(paymentId,{$set:{status:"approved"}},{new:true})
 
     const updatedUser=await userModel.findByIdAndUpdate(updatedPayment.user,{
