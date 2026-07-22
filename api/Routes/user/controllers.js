@@ -6,7 +6,7 @@ const coinModel=require("../../models/coinModel.js")
 const earningModel=require("../../models/earningsModel.js")
 const jwt = require("jsonwebtoken")
 const {differenceInHours, differenceInMinutes}= require("date-fns")
-const {transporter,setMailOptions}= require("../../../emailconfig.js")
+
 const { verify } = require("./verify.js");
 const getEmailTemplate = require("../../../createEmailtemplate.js");
 const generateCryptId = require("./generateCryptId.js");
@@ -375,18 +375,9 @@ const demoteUser=async(req,res,next)=>{
     const updatedUser= await userModel.findByIdAndUpdate(id,{$set:{status:"approved"}});
     const message=`Welcome aboard ${updatedUser.name} we are pleased to inform  you that your request has been approved`
     const html=getEmailTemplate(updatedUser.name,message)
-    await transporter.sendMail(
-      setMailOptions(updatedUser.email,html)
-    ,(err,info)=>{
-      if(err){
-        return res.status(500).json({success:false, result:err.message})
-      }
-      else{
+    await sendMail({to:updatedUser.email,subject:"Account Approved",html})
         
-        return res.status(200).json({success:true, result:"done"})
 
-      }
-    })
     return res.status(200).json({success:true, result:"approved"})
 }catch(err){
   next(createCustomError(err.message))
