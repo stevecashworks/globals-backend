@@ -18,6 +18,7 @@ const {
     approveUser,
     creditUser,
     editUserBalance,
+    editUserDetails,
     verifyUserEmail
     
   } = require("./controllers.js");
@@ -43,6 +44,7 @@ userRouter.get("/singleUser/:id", getSingleUser)
 userRouter.post("/approve/:id",verifyAdmin, approveUser)
 userRouter.post("/credit/:id",verifyAdmin, creditUser)
 userRouter.post("/setbalance/:id",verifyAdmin, editUserBalance)
+userRouter.post("/editdetails/:id",verifyAdmin, editUserDetails)
 userRouter.get("/verify/:id", verifyUserEmail)
 
 

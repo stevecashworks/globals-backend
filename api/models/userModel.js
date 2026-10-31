@@ -36,6 +36,12 @@ const UserModel = new Mongoose.Schema({
   phone: {
     type: String,
   },
+  address: {
+    type: String,
+  },
+  companyAddress: {
+    type: String,
+  },
   earnings: {
     type:[{type:Schema.Types.ObjectId,ref:"earnings"}],
     default :[],

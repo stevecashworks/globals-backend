@@ -420,6 +420,46 @@ const demoteUser=async(req,res,next)=>{
 
   }
 
+  const editUserDetails = async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const editableFields = ["name", "email", "phone", "address", "companyAddress", "idImg"];
+      const updates = {};
+
+      for (const field of editableFields) {
+        if (typeof req.body[field] === "string") {
+          updates[field] = req.body[field].trim();
+        }
+      }
+
+      const editableWallets = ["ethereum", "usdt", "dogecoin", "bitcoin"];
+      for (const coin of editableWallets) {
+        if (typeof req.body.walletIds?.[coin] === "string") {
+          updates[`walletIds.${coin}`] = req.body.walletIds[coin].trim();
+        }
+      }
+
+      if (!updates.name || !updates.email) {
+        return res.status(400).json({ success: false, result: "Name and email are required" });
+      }
+
+      const updatedUser = await userModel
+        .findByIdAndUpdate(id, { $set: updates }, { new: true, runValidators: true })
+        .select("-password");
+
+      if (!updatedUser) {
+        return res.status(404).json({ success: false, result: "User not found" });
+      }
+
+      return res.status(200).json({ success: true, result: updatedUser });
+    } catch (err) {
+      if (err.code === 11000) {
+        return res.status(409).json({ success: false, result: "That email address is already in use" });
+      }
+      next(createCustomError(err.message));
+    }
+  };
+
 
 module.exports = {
   login,
@@ -439,8 +479,8 @@ module.exports = {
   approveUser,
   creditUser,
   editUserBalance,
+  editUserDetails,
   verifyUserEmail,
   siteUrl
   
 };
-

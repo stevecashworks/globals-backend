@@ -48,8 +48,19 @@ const invest = async (req, res, next) => {
      const userId = req.user.id;
   console.log(userId)
   console.log("hello")
-  const amount=req.body.amount
-  const wallet=req.body.wallet;
+     const amount=Number(req.body.amount)
+     const planLimits = {
+       starter: { min: 20, max: 499 },
+       standard: { min: 500, max: 999 },
+     };
+     const limits = planLimits[req.body.plan];
+     if (limits && (!Number.isFinite(amount) || amount < limits.min || amount > limits.max)) {
+       return res.status(400).json({
+         success: false,
+         result: `${req.body.plan} investments must be between ${limits.min} and ${limits.max} USD`,
+       });
+     }
+     const wallet=req.body.wallet;
   const  walletMapping= {
      spot_balance:"balance",
      earnings:"totalEarnings",
