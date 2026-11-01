@@ -52,6 +52,7 @@ const invest = async (req, res, next) => {
      const planLimits = {
        starter: { min: 20, max: 499 },
        standard: { min: 500, max: 999 },
+       premium: { min: 1000, max: 9999 },
      };
      const limits = planLimits[req.body.plan];
      if (limits && (!Number.isFinite(amount) || amount < limits.min || amount > limits.max)) {
